@@ -1,4 +1,4 @@
-
+import screeninfo
 import cv2
 import numpy as np
 import screeninfo
@@ -8,9 +8,11 @@ import os
 from multiprocessing import Process, Value
 
 def display_image(image, scale, x_shift, y_shift, full_screen, display_flag):
+
     display_flag.value = False
-    screenid = 1 #second monitor
+    screenid = 0 #second monitor
     screen = screeninfo.get_monitors()[screenid]
+
     if full_screen:
         s_w, s_h = screen.width, screen.height
         i_w, i_h, _ = np.shape(image)
@@ -64,15 +66,17 @@ def display_image(image, scale, x_shift, y_shift, full_screen, display_flag):
 
     cv2.destroyAllWindows()
     
-
 class Display():
     def __init__(self):
         self.display_proc = None
         self.display_flag = Value('b', False)
 
     def start_display(self, image, scale, full_screen=False, x_shift=0, y_shift=0):
+        print("Starting display thread")
         self.stop_display() #this prevents more than a single display thread from running
+        print("Display thread stopped")
         self.display_proc = Process(target=display_image, args=(image, scale, x_shift, y_shift, full_screen, self.display_flag))
+        self.display_proc.start()
 
     def stop_display(self):
         self.display_flag.value = False
@@ -80,7 +84,6 @@ class Display():
         if self.display_proc is not None:
             if self.display_proc.is_alive():
                 self.display_proc.terminate()
-        self.display_proc.join()
         self.display_proc = None
 
     def close(self):
@@ -91,3 +94,6 @@ if __name__=="__main__":
     random_image = np.random.randint(0, 255, (200, 200, 3), dtype='uint8')
     disp = Display()
     disp.start_display(random_image, scale=1.0, full_screen=True, x_shift=0, y_shift=0)
+    time.sleep(5)  # Display for 5 seconds
+    disp.stop_display()
+    disp.close()
