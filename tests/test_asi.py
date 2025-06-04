@@ -32,6 +32,6 @@ filename = 'image_color.jpg'
 camera.set_image_type(asi.ASI_IMG_RGB24)
 print('Capturing a single, color image')
 camera.capture(filename=filename)
-print('Saved to %s' % filename)
-save_control_values(filename, camera.get_control_values())
+# print('Saved to %s' % filename)
+# save_control_values(filename, camera.get_control_values())
 
