@@ -6,8 +6,12 @@ import time
 import threading
 import os
 from multiprocessing import Process, Value
+import psutil
 
-def display_image(image, scale, x_shift, y_shift, full_screen, display_flag):
+
+def display_image(image, scale, x_shift, y_shift, full_screen, display_flag, **kwargs):
+
+    father_pid = kwargs.get('PID', None)
 
     display_flag.value = False
     screenid = 1 #second monitor
@@ -62,9 +66,11 @@ def display_image(image, scale, x_shift, y_shift, full_screen, display_flag):
 
     while(display_flag.value):
         cv2.waitKey(time_resolution) #display image for % milliseconds
-
-
+        if father_pid is not None and not psutil.pid_exists(father_pid):
+            print("Parent process with PID {} does not exist. Exiting display thread.".format(father_pid))
+            break
     cv2.destroyAllWindows()
+    return
     
 class Display():
     def __init__(self):
@@ -75,7 +81,15 @@ class Display():
         print("Starting display thread")
         self.stop_display() #this prevents more than a single display thread from running
         print("Display thread stopped")
-        self.display_proc = Process(target=display_image, args=(image, scale, x_shift, y_shift, full_screen, self.display_flag))
+        self.display_proc = Process(target=display_image, 
+                                    args=(image, 
+                                          scale, 
+                                          x_shift, 
+                                          y_shift, 
+                                          full_screen, 
+                                          self.display_flag), 
+                                          kwargs={'PID': os.getpid()})
+
         self.display_proc.start()
 
     def stop_display(self):
