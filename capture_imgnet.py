@@ -1,34 +1,3 @@
-import sys
-sys.path.append(r"../End2endONN")
-from get_dataset import get_dataset
-# from pympler import tracker
-import os
-# from tools import get_image_files, mkdir_no_overwrite, save_as_16bit_tiff
-from display import Display
-import cv2
-from matplotlib import pyplot as plt
-import numpy as np
-import time
-from asi_camera import Camera
-# import zwoasi as asi
-
-# asi.init(r"C:\ASI_Camera_SDK\ASI_Windows_SDK_V1.37\ASI SDK\lib\x64\ASICamera2.dll")
-
-# camera = asi.Camera(0)
-# asi._open_camera(0)
-
-# camera_info = camera.get_camera_property()
-# controls = camera.get_controls()
-
-
-DEBUG = False
-
-
-dataset_name = 'imagenet30'
-dataset_rootdir = r"../End2endONN/data"
-train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize=[224, 224])
-camera = Camera(camera_id=0)  # Initialize the camera
-
 
 def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
     """ Aquire images from a dataset and save them in a specified directory.
@@ -38,13 +7,11 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
         number: The number of images to acquire. If -1, acquire all images.
         start_index: The index to start acquiring images from.
     """
-
     gain_dB = [0]#, 34, 37, 40] # gain in dB
     exposure_time_s = [1.5] #[1, 2, 4, 8, 16] # exposure in seconds
     sizes = [0.50] # size of the displayed image. There's a littlbe bug so for now 0.9 is the largest display size
     gammas = [1]#, 0.8, 0.9, 1
     frames = 1
-
 
     # At 0.9 corresponds to 2 and 7/16 inches on screen. For HFOV on diagonal of 20 deg need screen distance of 4.74 inches
     # Display seems to be 120 mm x 67.5 mm, 0.0625 mm pixels
@@ -75,23 +42,37 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                             # disp_image = new_disp_image Green only
 
                             disp.start_display(disp_image, scale=scale, full_screen=True, y_shift = 0, x_shift = 0)
-                            out_file = os.path.join(pathname_out, dataset_name + '_' + str(i) + '_' + str(image_label) + 'label')
-                            file_ext = '_' + str(scale) + 'scale_' + str(gamma) + 'gamma_' + str(exposure) + 's_' + str(gain) + 'dB_frame' + str(j) + '_'
-                            # props = {'display image': disp_image, 'output file': out_file}
-                            # cam_image = Camera.take_picture(
-                            #     gain_dB=gain,
-                            #     exposure_time_s=exposure,
-                            #     props=props,
-                            #     bitdepth=Bitdepth.TWELVE)
-                            captured = camera.capture_image(filefolder=r'./try_capture',
-                                                            filename=r'dummy_capture.jpg', 
-                                                            exposure = exposure, 
-                                                            gain = gain
+
+
+                            break_patience = 5
+                            break_count = 0
+                            while True:
+                                try:
+                                    captured = camera.capture_image(exposure = exposure, 
+                                                            gain = gain,
+                                                            set_image_type=asi.ASI_IMG_RGB24
                                                             )
+                                    if captured.max() > 253:
+                                        exposure *= 0.8
+                                        print(f'Image saturation detected, max value: {captured.max()}, \
+                                              decreasing exposure to {exposure:.2f}s')
+                                    else:
+                                        break
+                                except Exception as e:
+                                    break_count += 1
+                                    if break_count > break_patience:
+                                        sys.exit(f"Failed to capture image after {break_patience} attempts: {e}")
+                                    print(f"Error capturing image: {e}, with break count {break_count}. Retrying...")
+                                    time.sleep(120)
+                                    camera = ASICamera(camera_id=0)  # Reinitialize the camera
 
-                            captured = captured.copy()
-
-                            
+                            captured_copy = captured.copy()                            
+                            out_file = dataset_name + '_' + str(i) + '_' + str(image_label) + 'label' + \
+                                '_' + str(scale) + 'scale_' + str(gamma) + 'gamma_' + str(exposure) + 's_' + \
+                                str(gain) + 'dB_frame' + str(j) + '.tiff'
+                            camera.save_captured_image(captured_copy, 
+                                                       os.path.join(pathname_out, out_file), 
+                                                       set_image_type=asi.ASI_IMG_RGB24)
 
                             if display:
                                 plt.show()
@@ -99,7 +80,25 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
         disp.close()
 
 if __name__=="__main__":
+    import sys
+    sys.path.append(r"../End2endONN")
+    from get_dataset import get_dataset
+    # from pympler import tracker
+    import os
+    # from tools import get_image_files, mkdir_no_overwrite, save_as_16bit_tiff
+    from display import Display
+    import cv2
+    from matplotlib import pyplot as plt
+    import numpy as np
+    import time
+    from asi_camera import ASICamera
+    import zwoasi as asi
+
+    dataset_name = 'imagenet30'
+    dataset_rootdir = r"../End2endONN/data"
+    train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize=[224, 224])
+    camera = ASICamera(camera_id=0)  # Initialize the camera
     # This is the output image directory
-    aquire_slidshow_dataset(pathname_out=r"C:\Minho\carvana_Captured_Images_training_Chip2", number=-1)
+    aquire_slidshow_dataset(train_dataset, pathname_out=r"./capdata", number=-1)
     print("Done!")
     exit()
