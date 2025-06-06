@@ -55,32 +55,54 @@ def get_current_captured_number(image_folder):
     return max_value
 
 
+
+import os
 from PIL import Image
+from multiprocessing import Process, cpu_count
+from tqdm import tqdm
+import math
 
-def convert_tiff_to_png(input_dir, output_dir):
-    """
-    Converts all .tiff or .tif images in input_dir to .png and saves them in output_dir.
-    
-    Args:
-        input_dir (str): Path to the folder containing .tiff images.
-        output_dir (str): Path to the folder where .png images will be saved.
-    """
+def convert_range(file_list, input_dir, output_dir):
+    for filename in tqdm(file_list, desc=f"[PID {os.getpid()}]"):
+        if not filename.lower().endswith(('.tif', '.tiff')):
+            continue
+
+        input_path = os.path.join(input_dir, filename)
+        output_name = os.path.splitext(filename)[0] + ".png"
+        output_path = os.path.join(output_dir, output_name)
+
+        if os.path.exists(output_path):
+            continue  # Already converted
+
+        try:
+            with Image.open(input_path) as img:
+                img = img.convert("RGB")
+                img.save(output_path, format="PNG")
+        except Exception as e:
+            print(f"[{filename}] Error: {e}")
+
+def convert_tiff_to_png(input_dir, output_dir, num_workers=None):
     os.makedirs(output_dir, exist_ok=True)
+    all_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.tif', '.tiff'))]
 
-    for filename in os.listdir(input_dir):
-        if filename.lower().endswith((".tif", ".tiff")):
-            input_path = os.path.join(input_dir, filename)
-            output_name = os.path.splitext(filename)[0] + ".png"
-            output_path = os.path.join(output_dir, output_name)
+    if not all_files:
+        print("No TIFF files found.")
+        return
 
-            try:
-                with Image.open(input_path) as img:
-                    img = img.convert("RGB")  # remove alpha if needed
-                    img.save(output_path, format="PNG")
-                    print(f"Converted: {filename} → {output_name}")
-            except Exception as e:
-                print(f"Failed to convert {filename}: {e}")
+    num_workers = num_workers or cpu_count()
+    chunk_size = math.ceil(len(all_files) / num_workers)
 
+    workers = []
+    for i in range(num_workers):
+        chunk = all_files[i * chunk_size: (i + 1) * chunk_size]
+        if not chunk:
+            continue
+        p = Process(target=convert_range, args=(chunk, input_dir, output_dir))
+        p.start()
+        workers.append(p)
+
+    for p in workers:
+        p.join()
 
 if __name__ == "__main__":
     # image_folder = r'D:\yuboz4\Imagenet_data\Hyperbolid\test'
