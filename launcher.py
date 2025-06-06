@@ -29,8 +29,8 @@ def kill_process_tree(parent_pid, logger):
 
 if __name__ == '__main__':
     restart_count = 0
-    logger = setup_logger(r'./launcher_logs')
-
+    # logger = setup_logger(r'./launcher_logs')
+    logger = setup_logger(r'C:/yuboz4/launcher_logs')
     try:
         while restart_count < MAX_RESTARTS:
             logger.info(f"[launcher] Starting capture_imgnet.py (attempt {restart_count + 1})")
