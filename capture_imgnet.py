@@ -20,6 +20,9 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
     display = False
     global Camera
     global logger
+    if MP_save:
+        global pool
+        global sem
 
     if number < 0:
         number = len(dataset)
@@ -81,7 +84,15 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                                 str(gain) + 'dB_frame' + str(j) + '.png'
                             try:
                                 logger.info(f"Saveing the image into {os.path.join(pathname_out, out_file)}")
-                                Camera.save_captured_image(captured_copy, 
+                                if MP_save:
+                                    sem.acquire()
+                                    pool.apply_async(save_image, args=(
+                                        captured_copy, 
+                                        os.path.join(pathname_out, out_file), 
+                                        asi.ASI_IMG_RGB24
+                                    ))
+                                else: 
+                                    Camera.save_captured_image(captured_copy, 
                                                         os.path.join(pathname_out, out_file), 
                                                         set_image_type=asi.ASI_IMG_RGB24)
                             except Exception as e:
@@ -108,7 +119,16 @@ if __name__=="__main__":
     import time
     from asi_camera import ASICamera
     import zwoasi as asi
-    from utlis import get_current_captured_number, setup_logger
+    from utlis import get_current_captured_number, setup_logger, save_image
+    from multiprocessing import Pool, Semaphore
+    import multiprocessing as mp
+
+    MP_save = True ### If we save images with pool multiprocess
+    NUM_workers = 10
+    if MP_save:
+        pool = mp.Pool(NUM_workers)
+        sem = Semaphore(50)
+
 
     dataset_name = 'imagenet30'
     dataset_rootdir = r"../End2endONN/data"

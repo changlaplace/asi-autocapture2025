@@ -104,6 +104,19 @@ def convert_tiff_to_png(input_dir, output_dir, num_workers=None):
     for p in workers:
         p.join()
 
+import zwoasi as asi
+def save_image(self, img, filename, set_image_type=asi.ASI_IMG_RGB24):
+    """Save the captured image to a file."""
+    if filename is not None:
+        mode = None
+        if len(img.shape) == 3:
+            img = img[:, :, ::-1]  # Convert BGR to RGB
+        if set_image_type == asi.ASI_IMG_RAW16:
+            mode = 'I;16'
+        image = Image.fromarray(img, mode=mode)
+        image.save(filename)
+    return 
+
 if __name__ == "__main__":
     # image_folder = r'D:\yuboz4\Imagenet_data\Hyperbolid\test'
     # current_number = get_current_captured_number(image_folder)
