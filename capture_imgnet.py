@@ -46,7 +46,7 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                             # new_disp_image = np.zeros_like(disp_image)  Green only
                             # new_disp_image[:,:,1] = np.array(disp_image[:,:,1]) Green only
                             # disp_image = new_disp_image Green only
-                            logger.info(f"Creating a display window for the {i} th image")
+                            logger.info(f"Creating a display window for the {i} th image in total {number} images")
                             disp.start_display(disp_image, scale=scale, full_screen=True, y_shift = 0, x_shift = 0)
                             while not disp.display_flag.value:
                                 time.sleep(0.1)
@@ -128,6 +128,6 @@ if __name__=="__main__":
     logger.info(f"Preparing to take images for test dataset")
     test_save_folder = r"C:\yuboz4\Imagenet_data\Hyperbolid\test"
     test_start_num = get_current_captured_number(test_save_folder)
-    aquire_slidshow_dataset(test_dataset, pathname_out=test_save_folder, number=-1, start_index=test_save_folder)
+    aquire_slidshow_dataset(test_dataset, pathname_out=test_save_folder, number=-1, start_index=test_start_num)
     print("Done!")
     exit()

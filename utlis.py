@@ -50,7 +50,7 @@ def get_current_captured_number(image_folder):
 
             value = int(parts[1])  
             max_value = max(max_value, value)
-    if max_value < 0:
+    if max_value is None or max_value < 0:
         max_value = 0
     return max_value
 
