@@ -90,7 +90,8 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                                         captured_copy, 
                                         os.path.join(pathname_out, out_file), 
                                         asi.ASI_IMG_RGB24
-                                    ))
+                                    ),
+                                    callback=lambda _:sem.release())
                                 else: 
                                     Camera.save_captured_image(captured_copy, 
                                                         os.path.join(pathname_out, out_file), 
@@ -127,7 +128,7 @@ if __name__=="__main__":
     NUM_workers = 20
     if MP_save:
         pool = mp.Pool(NUM_workers)
-        sem = Semaphore(22)
+        sem = Semaphore(4)
 
 
     dataset_name = 'imagenet30'

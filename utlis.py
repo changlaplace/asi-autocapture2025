@@ -105,7 +105,7 @@ def convert_tiff_to_png(input_dir, output_dir, num_workers=None):
         p.join()
 
 import zwoasi as asi
-def save_image(img, filename, set_image_type=asi.ASI_IMG_RGB24, sem=None):
+def save_image(img, filename, set_image_type=asi.ASI_IMG_RGB24):
     """Save the captured image to a file. Used for Multprocess saving"""
     if filename is not None:
         mode = None
@@ -115,8 +115,7 @@ def save_image(img, filename, set_image_type=asi.ASI_IMG_RGB24, sem=None):
             mode = 'I;16'
         image = Image.fromarray(img, mode=mode)
         image.save(filename)
-    if sem is not None:
-        sem.release()
+
     return 
 
 if __name__ == "__main__":
