@@ -94,7 +94,7 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                                 else: 
                                     Camera.save_captured_image(captured_copy, 
                                                         os.path.join(pathname_out, out_file), 
-                                                        set_image_type=asi.ASI_IMG_RGB24)
+                                                        set_image_type=asi.ASI_IMG_RGB24, sem=sem)
                             except Exception as e:
                                 logger.info(f"Failed in saving the image, continue")
                             
@@ -124,10 +124,10 @@ if __name__=="__main__":
     import multiprocessing as mp
 
     MP_save = True ### If we save images with pool multiprocess
-    NUM_workers = 10
+    NUM_workers = 20
     if MP_save:
         pool = mp.Pool(NUM_workers)
-        sem = Semaphore(50)
+        sem = Semaphore(22)
 
 
     dataset_name = 'imagenet30'
