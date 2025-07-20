@@ -16,15 +16,7 @@ def display_image(image, scale, x_shift, y_shift, full_screen, display_flag, **k
     display_flag.value = False
     screenid = 1 #second monitor
     screen = screeninfo.get_monitors()[screenid]
-
-    if full_screen:
-        s_w, s_h = screen.width, screen.height
-        i_w, i_h, _ = np.shape(image)
-        wx = float(s_w)/i_w
-        hx = float(s_h)/i_h
-        new_scale = min(wx, hx)
-        scale = new_scale * scale
-
+    
     #rotate image
     image = np.transpose(image, axes=(1, 0, 2))
 
@@ -43,7 +35,31 @@ def display_image(image, scale, x_shift, y_shift, full_screen, display_flag, **k
     print("Imported image width: {}".format(nx))
     print("Imported image height: {}".format(ny))
 
-    nx_new, ny_new = int(scale*nx), int(scale*ny)
+    simplified_square = True
+
+    if simplified_square:
+        if full_screen:
+
+            s_w, s_h = screen.width, screen.height
+            i_w, i_h, _ = np.shape(image)
+            wx = float(s_w)/i_w
+            new_scale = wx
+            scale = new_scale * scale
+
+        nx_new, ny_new = int(scale*nx), int(scale*nx)
+    
+    else:
+   
+        if full_screen:
+
+            s_w, s_h = screen.width, screen.height
+            i_w, i_h, _ = np.shape(image)
+            wx = float(s_w)/i_w
+            hx = float(s_h)/i_h
+            new_scale = min(wx, hx)
+            scale = new_scale * scale
+
+        nx_new, ny_new = int(scale*nx), int(scale*ny)
     print("Scaled image width: {}".format(nx_new))
     print("Scaled image height: {}".format(ny_new))
     image = cv2.resize(image, (ny_new, nx_new))

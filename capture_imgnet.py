@@ -8,8 +8,8 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
         start_index: The index to start acquiring images from.
     """
     gain_dB = [0]#, 34, 37, 40] # gain in dB
-    exposure_time_s = [0.12] #[1, 2, 4, 8, 16] # exposure in seconds
-    sizes = [0.50] # size of the displayed image. There's a littlbe bug so for now 0.9 is the largest display size
+    exposure_time_s = [0.08]#[1, 2, 4, 8, 16] # exposure in seconds
+    sizes = [0.35] # size of the displayed image. There's a littlbe bug so for now 0.9 is the largest display size
     gammas = [1]#, 0.8, 0.9, 1
     frames = 1
     
@@ -133,7 +133,7 @@ if __name__=="__main__":
 
     dataset_name = 'imagenet30'
     dataset_rootdir = r"../End2endONN/data"
-    train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize=[224, 224])
+    train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize = None)
 
     # logger = setup_logger(r'./capturing_logs')
     logger = setup_logger(r'./launcher_logs')
@@ -142,12 +142,14 @@ if __name__=="__main__":
     Camera = ASICamera(camera_id=0)  # Initialize the camera
     # This is the output image directory
     logger.info(f"Preparing to take images for train dataset")
-    train_save_folder = r"D:\yuboz4\250719imagenet_data\E2e\train"
+    train_save_folder = r"D:\yuboz4\250719imagenet_data\Hyp\train"
+    os.makedirs(train_save_folder, exist_ok=True)
     train_start_num = get_current_captured_number(train_save_folder)
     aquire_slidshow_dataset(train_dataset, pathname_out=train_save_folder, number=-1, start_index=train_start_num)
 
     logger.info(f"Preparing to take images for test dataset")
-    test_save_folder = r"D:\yuboz4\250719imagenet_data\E2e\test"
+    test_save_folder = r"D:\yuboz4\250719imagenet_data\Hyp\test"
+    os.makedirs(test_save_folder, exist_ok=True)
     test_start_num = get_current_captured_number(test_save_folder)
     aquire_slidshow_dataset(test_dataset, pathname_out=test_save_folder, number=-1, start_index=test_start_num)
     print("Done!")
