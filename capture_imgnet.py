@@ -136,18 +136,18 @@ if __name__=="__main__":
     train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize=[224, 224])
 
     # logger = setup_logger(r'./capturing_logs')
-    logger = setup_logger(r'C:/yuboz4/launcher_logs')
+    logger = setup_logger(r'./launcher_logs')
     logger.info('Finished setting up logging')
     
     Camera = ASICamera(camera_id=0)  # Initialize the camera
     # This is the output image directory
     logger.info(f"Preparing to take images for train dataset")
-    train_save_folder = r"C:\yuboz4\Imagenet_data\Hyperbolid\train"
+    train_save_folder = r"D:\yuboz4\250719imagenet_data\E2e\train"
     train_start_num = get_current_captured_number(train_save_folder)
     aquire_slidshow_dataset(train_dataset, pathname_out=train_save_folder, number=-1, start_index=train_start_num)
 
     logger.info(f"Preparing to take images for test dataset")
-    test_save_folder = r"C:\yuboz4\Imagenet_data\Hyperbolid\test"
+    test_save_folder = r"D:\yuboz4\250719imagenet_data\E2e\test"
     test_start_num = get_current_captured_number(test_save_folder)
     aquire_slidshow_dataset(test_dataset, pathname_out=test_save_folder, number=-1, start_index=test_start_num)
     print("Done!")

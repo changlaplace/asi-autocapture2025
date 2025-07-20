@@ -105,7 +105,7 @@ class Display():
 
 
 if __name__=="__main__":
-    random_image = np.random.randint(0, 255, (200, 200, 3), dtype='uint8')
+    random_image = np.random.randint(0, 255, (8000, 8000, 3), dtype='uint8')
     disp = Display()
     disp.start_display(random_image, scale=0.5, full_screen=True, x_shift=0, y_shift=0)
     time.sleep(5)  # Display for 5 seconds
