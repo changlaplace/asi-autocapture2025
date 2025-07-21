@@ -8,8 +8,8 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
         start_index: The index to start acquiring images from.
     """
     gain_dB = [0]#, 34, 37, 40] # gain in dB
-    exposure_time_s = [0.08]#[1, 2, 4, 8, 16] # exposure in seconds
-    sizes = [0.35] # size of the displayed image. There's a littlbe bug so for now 0.9 is the largest display size
+    exposure_time_s = [0.05]#[1, 2, 4, 8, 16] # exposure in seconds
+    sizes = [0.365] # size of the displayed image. There's a littlbe bug so for now 0.9 is the largest display size
     gammas = [1]#, 0.8, 0.9, 1
     frames = 1
     
@@ -54,7 +54,7 @@ def aquire_slidshow_dataset(dataset, pathname_out, number=-1, start_index=0):
                             while not disp.display_flag.value:
                                 time.sleep(0.1)
                                 logger.info("Waiting for display to start...")
-                            time.sleep(0.1)
+                            time.sleep(0.8)
                             break_patience = 5
                             break_count = 0
                             while True:
@@ -136,7 +136,7 @@ if __name__=="__main__":
     train_dataset, test_dataset = get_dataset(dataset_name, data_root=dataset_rootdir, download=True, resize = None)
 
     # logger = setup_logger(r'./capturing_logs')
-    logger = setup_logger(r'./launcher_logs')
+    logger = setup_logger(r'./capturing_logs')
     logger.info('Finished setting up logging')
     
     Camera = ASICamera(camera_id=0)  # Initialize the camera
