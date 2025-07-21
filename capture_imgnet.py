@@ -152,5 +152,6 @@ if __name__=="__main__":
     os.makedirs(test_save_folder, exist_ok=True)
     test_start_num = get_current_captured_number(test_save_folder)
     aquire_slidshow_dataset(test_dataset, pathname_out=test_save_folder, number=-1, start_index=test_start_num)
+    time.sleep(4)  # Give some time for the last images to be saved
     print("Done!")
     exit()
