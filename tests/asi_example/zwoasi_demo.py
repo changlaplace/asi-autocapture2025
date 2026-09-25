@@ -2,6 +2,17 @@ import argparse
 import os
 import sys
 import time
+
+os.environ.setdefault(
+    'ZWO_ASI_LIB',
+    r'C:\Program Files\ASIStudio\ASICamera2.dll',
+)
+SDK_DIRECTORY = os.path.dirname(os.environ['ZWO_ASI_LIB'])
+_SDK_DLL_DIRECTORY = None
+if os.path.isdir(SDK_DIRECTORY):
+    os.environ['PATH'] = SDK_DIRECTORY + os.pathsep + os.environ['PATH']
+    _SDK_DLL_DIRECTORY = os.add_dll_directory(SDK_DIRECTORY)
+
 import zwoasi as asi
 
 
@@ -74,8 +85,9 @@ camera.disable_dark_subtract()
 
 camera.set_control_value(asi.ASI_GAIN, 150)
 camera.set_control_value(asi.ASI_EXPOSURE, 30000)
-camera.set_control_value(asi.ASI_WB_B, 99)
-camera.set_control_value(asi.ASI_WB_R, 75)
+if camera_info['IsColorCam']:
+    camera.set_control_value(asi.ASI_WB_B, 99)
+    camera.set_control_value(asi.ASI_WB_R, 75)
 camera.set_control_value(asi.ASI_GAMMA, 50)
 camera.set_control_value(asi.ASI_BRIGHTNESS, 50)
 camera.set_control_value(asi.ASI_FLIP, 0)
@@ -126,11 +138,17 @@ except:
     pass
 
 print('Enabling video mode')
+camera.set_image_type(
+    asi.ASI_IMG_RGB24 if camera_info['IsColorCam'] else asi.ASI_IMG_RAW8
+)
 camera.start_video_capture()
 
 # Restore all controls to default values except USB bandwidth
 for c in controls:
-    if controls[c]['ControlType'] == asi.ASI_BANDWIDTHOVERLOAD:
+    if (
+        controls[c]['ControlType'] == asi.ASI_BANDWIDTHOVERLOAD
+        or not controls[c]['IsWritable']
+    ):
         continue
     camera.set_control_value(controls[c]['ControlType'], controls[c]['DefaultValue'])
 
@@ -157,26 +175,27 @@ if 'Exposure' in controls and controls['Exposure']['IsAutoSupported']:
     gain_last = None
     exposure_last = None
     matches = 0
-    while True:
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         time.sleep(sleep_interval)
         settings = camera.get_control_values()
         df = camera.get_dropped_frames()
         gain = settings['Gain']
         exposure = settings['Exposure']
-        if df != df_last:
+        if df != df_last or gain != gain_last or exposure != exposure_last:
             print('   Gain {gain:d}  Exposure: {exposure:f} Dropped frames: {df:d}'
                   .format(gain=settings['Gain'],
                           exposure=settings['Exposure'],
                           df=df))
-            if gain == gain_last and exposure == exposure_last:
-                matches += 1
-            else:
-                matches = 0
-            if matches >= 5:
-                break
-            df_last = df
-            gain_last = gain
-            exposure_last = exposure
+        if gain == gain_last and exposure == exposure_last:
+            matches += 1
+        else:
+            matches = 0
+        if matches >= 5:
+            break
+        df_last = df
+        gain_last = gain
+        exposure_last = exposure
 
 # Set the timeout, units are ms
 timeout = (camera.get_control_value(asi.ASI_EXPOSURE)[0] / 1000) * 2 + 500
@@ -185,13 +204,13 @@ camera.default_timeout = timeout
 if camera_info['IsColorCam']:
     print('Capturing a single color frame')
     filename = 'image_video_color.jpg'
-    camera.set_image_type(asi.ASI_IMG_RGB24)
     camera.capture_video_frame(filename=filename)
 else:
     print('Capturing a single 8-bit mono frame')
     filename = 'image_video_mono.jpg'
-    camera.set_image_type(asi.ASI_IMG_RAW8)
     camera.capture_video_frame(filename=filename)
 
 print('Saved to %s' % filename)
 save_control_values(filename, camera.get_control_values())
+camera.stop_video_capture()
+camera.close()

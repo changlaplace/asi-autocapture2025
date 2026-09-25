@@ -2,6 +2,17 @@ import argparse
 import logging
 import os
 import sys
+
+os.environ.setdefault(
+    'ZWO_ASI_LIB',
+    r'C:\Program Files\ASIStudio\ASICamera2.dll',
+)
+SDK_DIRECTORY = os.path.dirname(os.environ['ZWO_ASI_LIB'])
+_SDK_DLL_DIRECTORY = None
+if os.path.isdir(SDK_DIRECTORY):
+    os.environ['PATH'] = SDK_DIRECTORY + os.pathsep + os.environ['PATH']
+    _SDK_DLL_DIRECTORY = os.add_dll_directory(SDK_DIRECTORY)
+
 import zwoasi as asi
 
 
@@ -50,21 +61,21 @@ else:
 camera = asi.Camera(camera_id)
 camera_info = camera.get_camera_property()
 
-# Enable auto-exposure and white balance for convenience
+# Enable automatic controls supported by this camera.
 camera.auto_exposure()
-camera.auto_wb()
-
-# Auto-exposure/wb requires video captures
-camera.start_video_capture()
 
 if camera_info['IsColorCam']:
     camera.set_image_type(asi.ASI_IMG_RGB24)
+    camera.auto_wb()
     # Use mono binning
     # camera.set_image_type(asi.ASI_IMG_RAW8)
     # camera.set_control_value(asi.ASI_MONO_BIN, 1)
 else:
     camera.set_image_type(asi.ASI_IMG_RAW8)
 
+# Automatic controls require video capture.
+camera.start_video_capture()
+camera.default_timeout = 10_000
 camera.capture_video_frame(filename='bin1.jpg')
 
 cam_info = camera.get_camera_property()
@@ -72,3 +83,6 @@ for b in (1, 2):  # cam_info['SupportedBins']:
     print('Testing binning=%d' % b)
     camera.set_roi(bins=b)
     camera.capture_video_frame(filename='bins_%d.jpg' % b, timeout=10000)
+
+camera.stop_video_capture()
+camera.close()

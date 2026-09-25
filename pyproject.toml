@@ -1,0 +1,16 @@
+[project]
+name = "asi-autocapture2025"
+version = "0.1.0"
+description = "ZWO ASI camera capture utilities"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "opencv-python",
+    "pillow",
+    "psutil",
+    "screeninfo",
+    "tqdm",
+    "zwoasi",
+]
+

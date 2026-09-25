@@ -1,2 +1,43 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+graphify-out/
+
+# Virtual environments and local configuration
+.venv/
+venv/
+.python-version
+.env
+.env.*
+!.env.example
+
+# Packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Capture output and runtime logs
 capdata/
 *logs/
+*.log
+/captured_image.*
+/image_color.jpg
+/image_mono.jpg
+/image_mono16.tiff
+/image_video_*.jpg
+/image_*.txt
+/bin1.jpg
+/bins_*.jpg
+asset/
