@@ -24,9 +24,17 @@ def get_image_files(asset_dir):
     return files
 
 
-def load_display_image(path):
+def load_display_image(path, single_channel=False, channel='green'):
     """Load an image as BGR uint8 data for OpenCV display."""
     rgb = np.asarray(Image.open(path).convert('RGB'), dtype=np.uint8)
+    if single_channel:
+        channel_map = {'r': 0, 'red': 0, 'g': 1, 'green': 1, 'b': 2, 'blue': 2}
+        key = channel.lower()
+        if key not in channel_map:
+            raise ValueError(f'Unsupported display channel: {channel}')
+        display_rgb = np.zeros_like(rgb)
+        display_rgb[:, :, channel_map[key]] = rgb[:, :, channel_map[key]]
+        rgb = display_rgb
     return np.ascontiguousarray(rgb[:, :, ::-1])
 
 
@@ -50,6 +58,8 @@ def capture_asset_images(
     settle_time=0.5,
     start_index=0,
     limit=None,
+    single_channel_display=True,
+    display_channel='green',
 ):
     image_files = get_image_files(asset_dir)[start_index:]
     if limit is not None:
@@ -81,7 +91,11 @@ def capture_asset_images(
                 len(image_files),
             )
             display.start_display(
-                load_display_image(image_path),
+                load_display_image(
+                    image_path,
+                    single_channel=single_channel_display,
+                    channel=display_channel,
+                ),
                 scale=scale,
                 full_screen=True,
             )
@@ -150,15 +164,27 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Display local images one by one and capture them with a ZWO ASI camera.'
     )
-    parser.add_argument('--assets', default='asset', help='Directory containing source images.')
-    parser.add_argument('--output', default='capdata', help='Directory for captured images.')
-    parser.add_argument('--exposure', type=float, default=0.001, help='Initial exposure in seconds.')
+    parser.add_argument('--assets', default='assets_letters', help='Directory containing source images.')
+    parser.add_argument('--output', default='capdata_letters', help='Directory for captured images.')
+    parser.add_argument('--exposure', type=float, default=1.0, help='Initial exposure in seconds.')
     parser.add_argument('--gain', type=int, default=0, help='Camera gain value.')
     parser.add_argument('--scale', type=float, default=0.9, help='Image scale relative to the selected screen.')
     parser.add_argument('--screen', type=int, default=1, help='Zero-based monitor index used for display.')
     parser.add_argument('--settle-time', type=float, default=0.5, help='Seconds to wait before each capture.')
     parser.add_argument('--start-index', type=int, default=0, help='Zero-based source image index to start at.')
     parser.add_argument('--limit', type=int, help='Maximum number of images to capture.')
+    parser.add_argument(
+        '--single-channel-display',
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help='Display only one RGB channel in that channel color instead of the full RGB image.',
+    )
+    parser.add_argument(
+        '--display-channel',
+        choices=['r', 'g', 'b', 'red', 'green', 'blue'],
+        default='green',
+        help='Channel to isolate when --single-channel-display is enabled.',
+    )
     return parser.parse_args()
 
 
@@ -174,4 +200,6 @@ if __name__ == '__main__':
         settle_time=args.settle_time,
         start_index=args.start_index,
         limit=args.limit,
+        single_channel_display=args.single_channel_display,
+        display_channel=args.display_channel,
     )
