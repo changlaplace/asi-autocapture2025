@@ -1,0 +1,10 @@
+{
+  "camera": "ZWO ASI174MM",
+  "screen": 1,
+  "screen_width": 1920,
+  "screen_height": 1080,
+  "exposure_us": 80000,
+  "gain": 0,
+  "channel": "green",
+  "impulse_side_px": 22
+}

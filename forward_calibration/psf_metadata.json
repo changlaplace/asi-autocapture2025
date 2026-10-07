@@ -1,0 +1,26 @@
+{
+  "screen": 1,
+  "screen_width": 1920,
+  "screen_height": 1080,
+  "exposure_us": 1000000,
+  "gain": 0,
+  "channel": "green",
+  "probe_side_px": 22,
+  "repeats": 3,
+  "probe_offsets_px": {
+    "center": [
+      0,
+      0
+    ],
+    "x": [
+      480,
+      0
+    ],
+    "y": [
+      0,
+      270
+    ]
+  },
+  "dark_max": 13973.3330078125,
+  "probe_max": 16384.0
+}
