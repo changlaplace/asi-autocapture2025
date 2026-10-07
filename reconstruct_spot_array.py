@@ -109,6 +109,8 @@ def main() -> None:
     parser.add_argument("--model", default="forward_model.npz")
     parser.add_argument("--reference", help="Optional displayed image for evaluation only")
     parser.add_argument("--output-dir", default="forward_model_validation/reconstructions")
+    parser.add_argument("--scale", type=float, default=0.9,
+                        help="Display scale used for the measurement (default: 0.9)")
     args = parser.parse_args()
 
     measurement_path = Path(args.measurement)
@@ -140,7 +142,9 @@ def main() -> None:
     if args.reference:
         with Image.open(args.reference) as im:
             reference = np.asarray(im.convert("RGB"), dtype=np.uint8)
-        reference = render_display_canvas(reference, model.display_shape, scale=0.9, channel="green")
+        reference = render_display_canvas(
+            reference, model.display_shape, scale=args.scale, channel="green"
+        )
         axes[2].imshow(reference, cmap="gray", vmin=0, vmax=255)
         axes[2].set_title("Displayed reference (evaluation only)")
     for ax in axes:
