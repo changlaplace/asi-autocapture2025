@@ -68,6 +68,8 @@ At the same RAW16 exposure and gain, prediction errors are A: RMSE 156 DN
 (17.7%), r=0.990; D: 169 DN (15.3%), r=0.992; O: 174 DN (15.6%), r=0.992.
 F was captured after fitting as a held-out check: RMSE 158 DN (20.5%) and
 r=0.987. The comparisons are saved as
-`forward_model_<letter>_spot_array_comparison.png`. This is still a compact
-linear approximation; it does not model lenslet-specific distortion or
+`forward_model_validation/<letter>_comparison.png`; measured RAW16 frames are
+saved next to them. Predicted arrays are recomputed on demand rather than
+stored as duplicate multi-megabyte files. This is still a compact linear
+approximation; it does not model lenslet-specific distortion or
 intensity-dependent camera effects.

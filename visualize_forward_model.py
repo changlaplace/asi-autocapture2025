@@ -19,7 +19,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--asset', default='assets_letters/01_A.png')
     parser.add_argument('--model', default='forward_model.npz')
-    parser.add_argument('--output', default='forward_model_A_comparison.png')
+    parser.add_argument('--output', help='Comparison image path; defaults to <results-dir>/<letter>_comparison.png')
+    parser.add_argument('--results-dir', default='forward_model_validation')
     parser.add_argument('--measurement', help='Use a saved RAW16 .npy or image instead of capturing again')
     parser.add_argument('--screen', type=int, default=1)
     parser.add_argument('--scale', type=float, default=0.9)
@@ -88,10 +89,10 @@ def main():
         (actual_f - model.dark).ravel(), (predicted - model.dark).ravel()
     )[0, 1])
 
-    actual_path = Path(f'forward_model_{letter_label}_actual_raw16.npy')
-    predicted_path = Path(f'forward_model_{letter_label}_predicted_raw16.npy')
+    results_dir = Path(args.results_dir)
+    results_dir.mkdir(parents=True, exist_ok=True)
+    actual_path = results_dir / f'{letter_label}_actual_raw16.npy'
     np.save(actual_path, actual)
-    np.save(predicted_path, predicted)
     common_vmax = float(np.percentile(np.concatenate((actual_f.ravel(), predicted.ravel())), 99.8))
     error_scale = max(float(np.percentile(np.abs(residual), 99.5)), 1.0)
     fig, axes = plt.subplots(1, 3, figsize=(16, 6), constrained_layout=True)
@@ -111,10 +112,12 @@ def main():
         f"RMSE={rmse:.1f} DN ({relative:.1%} of mean signal), "
         f"MAE={mae:.1f} DN, r={correlation:.4f}"
     )
-    fig.savefig(args.output, dpi=160)
+    output_path = Path(args.output) if args.output else results_dir / f'{letter_label}_comparison.png'
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=160)
     plt.close(fig)
-    print(f'Saved comparison image: {Path(args.output).resolve()}')
-    print(f'Saved actual and predicted arrays: {actual_path}, {predicted_path}')
+    print(f'Saved comparison image: {output_path.resolve()}')
+    print(f'Saved measured RAW16 frame: {actual_path}')
     print(f'RMSE={rmse:.2f} DN; MAE={mae:.2f} DN; relative RMSE={relative:.4f}; r={correlation:.5f}')
 
 
