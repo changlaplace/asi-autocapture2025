@@ -73,3 +73,31 @@ saved next to them. Predicted arrays are recomputed on demand rather than
 stored as duplicate multi-megabyte files. This is still a compact linear
 approximation; it does not model lenslet-specific distortion or
 intensity-dependent camera effects.
+
+## Measurement-only reconstruction
+
+A direct Wiener inverse of the full spot-array PSF is ill-conditioned: the
+periodic lenslet pattern creates deep Fourier nulls, so dividing by its transfer
+function amplifies noise and produces grid artifacts instead of a stable image.
+The first reconstruction therefore uses the calibrated spot lattice directly:
+it flat-field corrects the RAW16 measurement, aligns the 120 repeated spot
+cells, takes a robust median tile, and scales that tile back to display
+coordinates using the fitted magnification. This operation uses only the
+measurement and fitted calibration. The optional reference image is loaded
+after reconstruction for the comparison panel only.
+
+```powershell
+.\.venv\Scripts\python.exe reconstruct_spot_array.py `
+  forward_model_validation/forward_model_B_actual_raw16.npy `
+  --reference assets_letters/02_B.png
+```
+
+The B and held-out F results are in
+`forward_model_validation/reconstructions/`. Both letter shapes are recovered
+clearly; remaining blur and small artifacts reflect lenslet-specific distortion
+and overlap between neighboring spot copies. The folded tile is contrast
+normalized for display, so its output brightness is not an absolute estimate
+of the original display code value. As a rough shape check after reconstruction,
+the thresholded masks (code value >127) have IoU 0.67 for B and 0.73 for F
+against the displayed references; those references were not used by the
+reconstruction.
